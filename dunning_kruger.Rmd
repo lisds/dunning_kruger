@@ -105,5 +105,23 @@ df.groupby('actual_quantile', observed=True)['difference'].mean()
 ```
 
 ```{python}
-# arbitrary change
+# add some randomnss to the the perceived percentiles
+df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.normal(0, 20, len(df))
+
+df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
+
+df.head()
+```
+
+```{python}
+# new dunning_kruger
+df.groupby('actual_quantile', observed=True)['difference_w_randomness'].mean()
+```
+
+```{python}
+
+```
+
+```{python}
+
 ```
