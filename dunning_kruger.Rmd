@@ -117,11 +117,3 @@ df.head()
 # new dunning_kruger
 df.groupby('actual_quantile', observed=True)['difference_w_randomness'].mean()
 ```
-
-```{python}
-
-```
-
-```{python}
-
-```
