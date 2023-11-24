@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -103,6 +103,15 @@ df
 ```{python}
 df.groupby('actual_quantile', observed=True)['difference'].mean()
 ```
+
+## First update - add some randomness to the percentiles
+
+
+Maybe adding some randomness will attenuate the DK effect?
+
+(Pause - is that really likely to be true?)
+
+Notice that we are still using the crushed BTA estimates.
 
 ```{python}
 # add some randomness to the the perceived percentiles
