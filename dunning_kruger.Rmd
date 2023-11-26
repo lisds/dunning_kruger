@@ -66,6 +66,7 @@ percentile_actual
 x = percentile_actual -  50. # Scale so range is -30 to +30.
 crushed_bta = x * (30 / 50) + 60. # BTA effect (60 not 50).
 np.mean(crushed_bta)
+
 ```
 
 ```{python}
@@ -103,3 +104,58 @@ df
 ```{python}
 df.groupby('actual_quantile', observed=True)['difference'].mean()
 ```
+
+## My simulation
+
+
+```{python}
+real_result = np.linspace(0, 100, 10_000)
+real_result
+```
+
+```{python}
+#most people rate themselves as above average - Better Than Average Effect
+#true average is 50
+print('mean real results: ', real_result.mean())
+#generate perceived results where 'most' people rate themselves above average
+# mean average is 50 - lets say 'most' people is 70% of people
+# generate perceived results with 70% of population rating themselves above 50 -> 30% between 0 and 50
+
+perceived_result = np.concatenate((np.linspace(0, 50, 3000), np.linspace(50, 100, 7000)))
+print(perceived_result)
+
+```
+
+```{python}
+plt.hist(real_result)
+```
+
+```{python}
+plt.hist(perceived_result)
+```
+
+```{python}
+plt.plot(real_result-perceived_result)
+
+```
+
+```{python}
+df2 = pd.DataFrame({
+    'real_result': real_result,
+    'perceived_result': perceived_result,
+    'difference': perceived_result - real_result
+})
+df2
+```
+
+```{python}
+df2['actual_quantile'] = pd.qcut(df2['real_result'], 4,
+                                labels=['low', 'med-low', 'med-high', 'high'])
+df2
+```
+
+```{python}
+df2.groupby('actual_quantile', observed=True)['difference'].mean()
+```
+
+
