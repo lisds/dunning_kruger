@@ -103,3 +103,44 @@ df
 ```{python}
 df.groupby('actual_quantile', observed=True)['difference'].mean()
 ```
+
+#### New simulation
+
+```{python}
+#Creating artificial test scores
+score_actual = np.linspace(0, 100, 10_000)
+score_actual
+```
+
+```{python}
+##Simulating the scores which people assume they would achieve, factoring in the better-than-average effect assuming that 80% of people estimate theirselves to be better than average.
+score_assumed = np.append(np.linspace(0, 50, 2000), np.linspace(50, 100, 8000))
+```
+
+```{python}
+#Finding the difference between the actual scores and those which people assume they would achieve 
+assumed_minus_actual = score_assumed - score_actual
+assumed_minus_actual
+```
+
+```{python}
+#Representing all this data in a dataframe
+my_df = pd.DataFrame({
+    'actual_percentile': score_actual,
+    'perceived_percentile': score_assumed,
+    'difference': assumed_minus_actual
+})
+my_df
+```
+
+```{python}
+my_df['actual_quantile'] = pd.qcut(df['actual_percentile'], 4,
+                                labels=['low', 'med-low', 'med-high', 'high'])
+my_df
+```
+
+```{python}
+my_df.groupby('actual_quantile', observed=True)['difference'].mean()
+```
+
+This doesn't quite represent the dunning-kruger effect as the high performers aren't underestimating their ability. Also the biggest difference in mine is in the med-low group whereas most dunning kruger graphs show the biggest difference being in the lowest performing poeple.
