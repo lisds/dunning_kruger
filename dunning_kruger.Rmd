@@ -103,3 +103,72 @@ df
 ```{python}
 df.groupby('actual_quantile', observed=True)['difference'].mean()
 ```
+
+### My edits bellow
+
+For this simulation I'm going to assume that people have no idea how good they are and so there percieved score will br random. However I will also assume that no one will vote themselves less than the tenth percentile and greter than the 90th percentile, because of this the distribution will also be a little smaller.  The mean for the percieved score will alos be higher than the average hifglighting the better than average.  
+
+```{python}
+perceived_percentile_2 = rng.normal(60, 10, size=10_000)
+
+perceived_percentile_2 = np.clip(perceived_percentile_2, 10, 90)
+
+plt.hist(percieved_percentile_2, bins=100);
+```
+
+```{python}
+df_2 = pd.DataFrame({
+    'actual_percentile': percentile_actual,
+    'perceived_percentile': perceived_percentile_2,
+    'difference': perceived_percentile_2 - percentile_actual
+})
+df_2
+```
+
+```{python}
+df_2['actual_quantile'] = pd.qcut(df['actual_percentile'], 4,
+                                labels=['low', 'med-low', 'med-high', 'high'])
+df_2
+```
+
+```{python}
+df_2.groupby('actual_quantile', observed=True)['difference'].mean()
+```
+
+According to the results I've got here my assumptions could explain the Dunning-Kruger effect, however i will do this simulate this a few more times to esnure this is true. 
+
+```{python}
+num_runs = 100
+
+all_results = []
+
+for i in range(num_runs):
+   
+    perceived_percentile_2 = np.random.normal(60, 10, size=10_000)
+
+    perceived_percentile_2 = np.clip(perceived_percentile_2, 10, 90)
+
+    df_2 = pd.DataFrame({
+        'actual_percentile': percentile_actual,
+        'perceived_percentile': perceived_percentile_2,
+        'difference': perceived_percentile_2 - percentile_actual
+    })
+
+    df_2['actual_quantile'] = pd.qcut(df_2['actual_percentile'], 4, labels=['low', 'med-low', 'med-high', 'high'])
+
+    mean_difference_by_quantile = df_2.groupby('actual_quantile', observed=True)['difference'].mean()
+
+    all_results.append(mean_difference_by_quantile)
+
+all_results_df = pd.concat(all_results, axis=1)
+
+mean_diff_across_runs = all_results_df.mean(axis=1)
+std_diff_across_runs = all_results_df.std(axis=1)
+
+
+print("Mean difference across runs:\n", mean_diff_across_runs)
+print("\nStandard deviation of difference across runs:\n", std_diff_across_runs)
+
+```
+
+This aslo indicates the same results as the Dunning Kruger effect.
