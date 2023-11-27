@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -51,14 +51,12 @@ plt.hist(actual_scores, bins=100);
 ```{python}
 # Actually, I'm more interested in percentiles.  Let's order the scores.
 sorted_actual = np.sort(actual_scores)
-sorted_actual
 ```
 
 ```{python}
 # Oh wait, it doesn't actually matter what the scores are, it just depends
 # on their rank order.   I can just use linspace for that.
 percentile_actual = np.linspace(0, 100, 10_000)
-percentile_actual
 ```
 
 ```{python}
@@ -69,7 +67,7 @@ np.mean(crushed_bta)
 ```
 
 ```{python}
-plt.hist(crushed_bta, bins=100)
+plt.hist(crushed_bta, bins=100);
 ```
 
 ```{python}
@@ -78,11 +76,11 @@ perceived_minus_actual
 ```
 
 ```{python}
-plt.hist(perceived_minus_actual)
+plt.hist(perceived_minus_actual);
 ```
 
 ```{python}
-plt.plot(perceived_minus_actual)
+plt.plot(perceived_minus_actual);
 ```
 
 ```{python}
@@ -112,4 +110,35 @@ df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.norma
 df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
 
 df.head()
+```
+
+# Let's start over
+
+```{python}
+#Percentiles from a test:
+actualPercentiles = np.linspace(0, 100, 10_000)
+```
+
+```{python}
+#Perceived percentile performance in a test:
+perceivedPercentiles = actualPercentiles + 10 #BTA effect
+perceivedPercentiles = pd.Series(perceivedPercentilesBTA).apply(lambda x: 80 if x > 80 else 20 if x < 20 else x) #Crushing
+```
+
+```{python}
+perceivedMinusActual = perceivedPercentiles - actualPercentiles
+actualMinusPerceived = actualPercentiles - perceivedPercentiles
+```
+
+```{python}
+plt.plot(perceivedPercentiles,label='Perceived')
+plt.plot(actualPercentiles,label='Actual')
+plt.fill_between(perceivedPercentiles.index,
+                 perceivedPercentiles,
+                 actualPercentiles,
+                 where=(perceivedPercentiles > actualPercentiles), color='red', alpha=0.3)
+plt.fill_between(perceivedPercentiles.index,
+                 perceivedPercentiles,
+                 actualPercentiles,
+                 where=(perceivedPercentiles < actualPercentiles), color='green', alpha=0.3)
 ```
