@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -62,18 +62,32 @@ percentile_actual
 ```
 
 ```{python}
-# Scale the range either side of the mean, to +-30 (rather than 50)
-x = percentile_actual -  50. # Scale so range is -30 to +30.
-crushed_bta = x * (30 / 50) + 60. # BTA effect (60 not 50).
-np.mean(crushed_bta)
+#People are unlikely to rank themselves in the bottom/ top 20% so each end only contains 5%
+#of the data. The Bta effect is accounted for, 55% of the values fall between 50-80 only 35% 
+#between 20 and 50. I think this is better than the crushed model as i don't think it's justifiable 
+#to assume that no one will rate themselves in the top or bottom 20%, people can be seriously cocky
+#and self depricating. 
+zero_to_10 = np.linspace(0, 20, 500)
+ten_to_50 = np.linspace(20, 50, 3500)
+fifty_to_90 = np.linspace(50, 80, 5500)
+ninety_to_100 = np.linspace(80, 100, 500)
+first_half = np.append(zero_to_10, ten_to_50)
+second_half = np.append(fifty_to_90, ninety_to_100)
+full = np.append(first_half, second_half)
+
 ```
 
 ```{python}
-plt.hist(crushed_bta, bins=100)
+
+
 ```
 
 ```{python}
-perceived_minus_actual = crushed_bta - percentile_actual
+plt.hist(full, bins=100)
+```
+
+```{python}
+perceived_minus_actual = full - percentile_actual
 perceived_minus_actual
 ```
 
@@ -88,8 +102,8 @@ plt.plot(perceived_minus_actual)
 ```{python}
 df = pd.DataFrame({
     'actual_percentile': percentile_actual,
-    'perceived_percentile': crushed_bta,
-    'difference': crushed_bta - percentile_actual
+    'perceived_percentile': full,
+    'difference': full - percentile_actual
 })
 df
 ```
@@ -112,4 +126,12 @@ df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.norma
 df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
 
 df.head()
+```
+
+```{python}
+
+```
+
+```{python}
+
 ```
