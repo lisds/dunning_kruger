@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -21,7 +21,7 @@ Here we load the libraries we need:
 ```{python}
 import numpy as np
 rng = np.random.default_rng()
-import pandas as pd
+import pandas as pdi
 import matplotlib.pyplot as plt
 np.set_printoptions(suppress=True)
 pd.set_option('mode.copy_on_write', True)
@@ -29,18 +29,12 @@ pd.set_option('mode.copy_on_write', True)
 
 In this notebook we are investigating whether the Dunning-Kruger effect can be explained with simple statistical artifacts.
 
-An example of random choice.
-
-```{python}
-a = rng.choice([1, 2], p=[0.3, 0.7], size=10)
-a
-```
 
 Make some actual scores.
 
 ```{python}
 # Actual scores from some test.  Mean 50, std 15.
-actual_scores = rng.normal(50, 15, size=10_000)
+actual_scores = np.clip(rng.normal(50, 15, size=10_000), 0, 100)
 actual_scores[:10]
 ```
 
@@ -55,25 +49,41 @@ sorted_actual
 ```
 
 ```{python}
-# Oh wait, it doesn't actually matter what the scores are, it just depends
-# on their rank order.   I can just use linspace for that.
+# Oh wait, it doesn't actually matter what the scores are, it just depends on their rank order. I can use linspace for that.
+#linspace generates evenly space values so in this case between 0 and 100 in 10,000 steps)
 percentile_actual = np.linspace(0, 100, 10_000)
 percentile_actual
 ```
 
 ```{python}
-# Scale the range either side of the mean, to +-30 (rather than 50)
-x = percentile_actual -  50. # Scale so range is -30 to +30.
-crushed_bta = x * (30 / 50) + 60. # BTA effect (60 not 50).
-np.mean(crushed_bta)
+plt.hist(percentile_actual)
 ```
 
 ```{python}
-plt.hist(crushed_bta, bins=100)
+# Scale the range either side of the mean, to +- 30 
+T_Set = percentile_actual - 50. # Shifting percentiles so that the mean becomes 0 
+N_Set =  T_Set * (60 / 100) # Scale so range is -30 to +30. 
+BA_Set = N_Set + 10 # BTA effect everyone assuming they are +10 above the mean.
+Rb_Set = np.where( BA_Set < 0, BA_Set - 10, BA_Set + 10) # Changing scores by +-10 Away from mean
+Psy_effects =Rb_Set + 50 # Shifting back to positive range
+
+# Print and inspect combined result
+print("Psy_effects:", Psy_effects)
+
+# Calculate and print mean
+mean_psy_effects = np.mean(Psy_effects)
+print("Mean of Psy_effects:", mean_psy_effects)
+
 ```
 
 ```{python}
-perceived_minus_actual = crushed_bta - percentile_actual
+plt.hist(Psy_effects, bins=100)
+```
+
+```{python}
+#Peoples Idea of their scores - Their actual scores 
+#Gives difference
+perceived_minus_actual = Psy_effects - percentile_actual
 perceived_minus_actual
 ```
 
@@ -86,15 +96,17 @@ plt.plot(perceived_minus_actual)
 ```
 
 ```{python}
+#creating a dataframe to show what is happening to people at different percentiles
 df = pd.DataFrame({
     'actual_percentile': percentile_actual,
-    'perceived_percentile': crushed_bta,
-    'difference': crushed_bta - percentile_actual
+    'perceived_percentile': Psy_effects,
+    'difference': perceived_minus_actual
 })
 df
 ```
 
 ```{python}
+#Separating them into quartiles to see behaviours in low low mid high mid and high 
 df['actual_quantile'] = pd.qcut(df['actual_percentile'], 4,
                                 labels=['low', 'med-low', 'med-high', 'high'])
 df
@@ -113,3 +125,27 @@ df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['ac
 
 df.head()
 ```
+
+```{python}
+df[df['difference'] > 23.0]
+```
+
+```{python}
+df.groupby('actual_quantile', observed=True)['difference_w_randomness'].mean()
+```
+
+With the transformations applied those in med-low are most likely to overestimate their scores, with those in low and med-high having similar scores in terms of overestimating their ability. Those in High were most likely to get a closest guess to their ability, however an improvement may take into account how they may underestimate their ability or a reason why they would as with the present transformations they still overestimate until they are getting 100, and these people are not overestimating as they are getting the max score.
+
+This does not quite replicate the DK effect as the people at the top are still overestimating their scores, I could have applied the normalisation effect at the end and this would have resulted in it being closer to the DK effect.
+
+
+What is the problem with this simulation?
+
+By applying every effect to the entire population this does not accurately simulate what is likely to happen. People at differing quartiles are more likely to experience different psychological effects. To improve this you could attempt to apply different transformations to each quartile. And to improve that further you would apply it randomly to scores within those quartiles. However once we start applying different effects to different percentiles this becomes problematic as you are beginning to intentionally shape the overall picture and make suggestions about how certain groups may behave rather than a generalise theory of what may be happening. This could result is an even less accurate representation of what is actually happening then a generalised approach if done badly.
+
+To some extent this is a very simple way to to represent how various effects may influence scores but as soon as you start to apply weightings the method becomes biased as you are having to make judgements on what is more or less effective.
+
+
+
+
+
