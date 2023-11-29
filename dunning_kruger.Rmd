@@ -64,7 +64,7 @@ percentile_actual
 ```{python}
 # Scale the range either side of the mean, to +-30 (rather than 50)
 x = percentile_actual -  50. # Scale so range is -30 to +30.
-crushed_bta = x * (30 / 50) + 60. # BTA effect (60 not 50).
+crushed_bta = x * (25 / 50) + 70. # BTA effect (70 not 50).
 np.mean(crushed_bta)
 ```
 
