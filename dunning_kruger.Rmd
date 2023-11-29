@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -106,10 +106,53 @@ df.groupby('actual_quantile', observed=True)['difference'].mean()
 
 ```{python}
 # add some randomness to perceived percentiles
-df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.normal(0, 10, len(df))
+df['pp_w_random'] = df['perceived_percentile'] + rng.normal(0, 10, len(df))
 
 # calculate the difference between the new perceived percentiles (with randomness) and the actual percentiles
-df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
+df['difference_w_randomness'] = df['pp_w_random'] - df['actual_percentile']
 
 df.head()
+```
+
+```{python}
+#graph to see what things look like
+df.plot()
+```
+
+```{python}
+#let's look at the red and purple ones more closely
+df["difference_w_randomness"].plot()
+```
+
+```{python}
+#almost opposite shapes:
+df["pp_w_random"].plot()
+```
+
+```{python}
+#What if we changed the randomness to be fully random?
+df['pp_fullrandom'] = df['perceived_percentile'] + rng.random(len(df))
+df['pp_fullrandom'].plot()
+```
+
+```{python}
+#what about poisson? many graphs of the DK effect on the internet show more of a poisson shape than a normal dist
+df['pp_poisson'] = df['perceived_percentile'] + rng.poisson(10, len(df))
+df['pp_poisson'].plot()
+```
+
+Interesting how all the random ones still have a similar positive slope, the main difference seems to be the y-axis. Still, could be worth
+looking at the difference with the poisson randomness:
+
+```{python}
+df['diff_w_poisson_randomness'] = df['pp_poisson'] - df['actual_percentile']
+df
+```
+
+```{python}
+df['diff_w_poisson_randomness'].plot()
+```
+
+```{python}
+
 ```
