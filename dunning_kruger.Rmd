@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -24,6 +24,8 @@ rng = np.random.default_rng()
 import pandas as pd
 import matplotlib.pyplot as plt
 np.set_printoptions(suppress=True)
+
+
 pd.set_option('mode.copy_on_write', True)
 ```
 
@@ -42,6 +44,152 @@ Make some actual scores.
 # Actual scores from some test.  Mean 50, std 15.
 actual_scores = rng.normal(50, 15, size=10_000)
 actual_scores[:10]
+```
+
+```{python}
+
+```
+
+```{python}
+# a new way to calcualate the percieved percentile scores 
+# the dunning kruger says that the top qurter of competence show a decrease and the
+#     bottom 25% show a larger increase in percieved smartness
+# first i need to use linspace to find the position of the scores 
+# so i need to select the score from the test that are in the bottom 25% and add on a 
+#   number - then i need to select the top scores and take away a smaller number 
+```
+
+```{python}
+position = np.sort(actual_scores)
+# the score doesnt matter 
+position = np.linspace(0, 100, 10_000)
+# create a gradual increase in percieved score and then a decrease in perceieved score
+#     past 75 
+def adjustment(scores):
+    if scores < 25:
+        return scores + 20
+    elif scores < 50:
+        return scores + 10 
+    elif scores < 75:
+        return scores + 5
+    else:
+        return scores - 10
+
+
+```
+
+```{python}
+position
+
+```
+
+```{python}
+# i need to put this in a form that i can apply the function to 
+df = pd.DataFrame({'results': position})
+df
+#then apply function to these 'results' not actually scores but deosnt matter what the
+#    scores are so its fine
+df['adjusted_results'] = df['results'].apply(adjustment)
+df
+```
+
+```{python}
+# need to create competence values for x 
+df['competence'] = np.arange(0,10000, 1)
+df
+```
+
+```{python}
+# now plot the grpah
+plt.scatter(df['competence'], df['results'])
+```
+
+```{python}
+# not curved ? fix 
+def adjustment(scores):
+    if scores < 25:
+        return scores + rng.uniform(20,40)
+    elif scores < 50:
+        return scores + rng.uniform(10,15)
+    elif scores < 75:
+        return scores + rng.uniform(5,10)
+    else:
+        return scores - rng.uniform(10,15)
+
+df['adjusted_results'] = df['results'].apply(adjustment)
+df
+
+
+# i had to look up the .uniform(_) bit as it wasnt working with just rng(_) 
+# it turns out this is just how you do it to get a random number in and including the bounds
+```
+
+```{python}
+# go back to using the actual radomly generated scores
+df['results'] = np.sort(actual_scores)
+df['adjusted_results'] = df['results'].apply(adjustment)
+df
+```
+
+```{python}
+plt.scatter([df['competence'][0], df['competence'][2500], df['competence'][5000], df['competence'][7500], df['competence'][9999]],
+            [df['results'][0], df['results'][2500], df['results'][5000], df['results'][7500], df['results'][9999]])
+plt.plot([df['competence'][0], df['competence'][2500], df['competence'][5000], df['competence'][7500], df['competence'][9999]],
+            [df['results'][0], df['results'][2500], df['results'][5000], df['results'][7500], df['results'][9999]])
+
+plt.scatter([df['competence'][0], df['competence'][2500], df['competence'][5000], df['competence'][7500], df['competence'][9999]],
+            [df['adjusted_results'][0], df['adjusted_results'][2500], df['adjusted_results'][5000], df['adjusted_results'][7500], df['adjusted_results'][9999]])
+plt.plot([df['competence'][0], df['competence'][2500], df['competence'][5000], df['competence'][7500], df['competence'][9999]],
+            [df['results'][0], df['results'][2500], df['results'][5000], df['results'][7500], df['results'][9999]])
+
+# why does this only show one line ?????
+```
+
+```{python}
+plt.scatter([df['competence'][0], df['competence'][2500], df['competence'][5000], df['competence'][7500], df['competence'][9999]],
+            [df['results'][0], df['results'][2500], df['results'][5000], df['results'][7500], df['results'][9999]], label='intelligence')
+
+plt.scatter([df['competence'][0], df['competence'][2500], df['competence'][5000], df['competence'][7500], df['competence'][9999]],
+            [df['adjusted_results'][0], df['adjusted_results'][2500], df['adjusted_results'][5000], df['adjusted_results'][7500], df['adjusted_results'][9999]], label='percieved intelligence')
+plt.xlabel('competence')
+plt.ylabel('score')
+plt.legend()
+plt.show()
+
+#i cant get the 
+```
+
+this shows that the more competent people consider themselves less competent and the less competent people  consider themselves more competent than they actually are 
+
+it shows that as competent rises the difference between competence and percieved competence falls
+
+the choices i made were realistic peoples perceptions of themselves are likely to vary within the groups 
+
+i like my model as it reflects differences in peoples perceptions of themselves within the percentiles my having random increases and decreases between bounds 
+
+
+
+
+
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
 ```
 
 ```{python}
@@ -112,4 +260,24 @@ df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.norma
 df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
 
 df.head()
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
 ```
