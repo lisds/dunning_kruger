@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -111,5 +111,50 @@ df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.norma
 # calculate the difference between the new perceived percentiles (with randomness) and the actual percentiles
 df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
 
-df.head()
+df.head(101)
 ```
+
+### Initial Version
+
+```{python}
+#creating a new simulation of perceived scores which takes into account the better than average effect,
+#and realistically distributes people at the top and bottom of the distribution
+perceived_scores = rng.normal(60, 15, size=10_000)
+plt.hist(perceived_scores, bins = 100);
+```
+
+### Improved Model
+
+```{python}
+#I like the lower half of the distribution above, however, there are people distributed significantly beyond 100%
+#I believe that people above the median would be slightly more concentrated towards the median than those before it
+#This is because people towards the higher percentiles may want to appear as more modest
+lower_half = np.sort(perceived_scores)[:5000]
+upper_half = np.sort(rng.normal(60, 12, size = 10_000))[5000:]
+perceived_dist = np.concatenate((lower_half,upper_half))
+plt.hist(perceived_dist,bins=105);
+plt.xlim([0,105]);
+
+```
+
+```{python}
+perceived_percentiles = np.percentile(perceived_dist, np.arange(0,101,1))
+actual_percentiles = np.percentile(actual_scores, np.arange(0,101,1))
+df2 = pd.DataFrame({
+    'actual_percentile': actual_percentiles,
+    'perceived_percentile': perceived_percentiles})
+df2
+```
+
+```{python}
+df2['actual - perceived'] = df2['actual_percentile'] - df2['perceived_percentile']
+lower_quartile_mean = np.mean(df2['actual - perceived'][:25])
+upper_quartile_mean = np.mean(df2['actual - perceived'][75:])
+print("The mean difference between actual and perceived, across percentiles in the lower quartile is", str(lower_quartile_mean)[:5])
+print("In the upper quartile it is", str(upper_quartile_mean)[:4])
+```
+
+This means that for the lower quartile, people perceive themselves as being more intelligent then they are. 
+In the upper quartile, people perceive themselves as being less intelligent then they are.  
+Both of these align with the hypothesis of the Dunning-Kruger effect. Therefore I have, at least based on these metrics, replicated the Dunning-Kruger effect.  
+I prefer my model to the crushed score model because I think it is unrealistic for there to be no individuals in a sample of 10,000 who would place themselves within the bottom 30% for intelligence. Furthermore, a large number of datapoints in the crushed score model are significantly beyond the 100% score, while for my model only a small number of datapoints enter this impossible area.
