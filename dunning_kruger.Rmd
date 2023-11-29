@@ -7,9 +7,9 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
-    display_name: Python 3 (ipykernel)
+    display_name: Python 3
     language: python
     name: python3
 ---
@@ -112,4 +112,54 @@ df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.norma
 df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
 
 df.head()
+```
+
+```{python}
+#I've re-grouped by the difference with randomness to see how the randomness affected the perception of scores
+df.groupby('actual_quantile', observed=True)['difference_w_randomness'].mean()
+```
+
+### New Simulation
+
+```{python}
+percentile_actual = np.linspace(0, 100, 10_000)
+percentile_actual
+```
+
+```{python}
+x = percentile_actual -  50. # centering around 0 for ease
+crushed_bta = x * (17 / 50) + 68. # making the range 51 to 85
+np.mean(crushed_bta)
+```
+
+```{python}
+crushed_bta
+```
+
+```{python}
+#new sim data frame
+df = pd.DataFrame({
+    'actual_percentile': percentile_actual,
+    'perceived_percentile': crushed_bta,
+    'difference': crushed_bta - percentile_actual
+})
+df
+```
+
+```{python}
+df['actual_quantile'] = pd.qcut(df['actual_percentile'], 4,
+                                labels=['low', 'med-low', 'med-high', 'high'])
+df
+```
+
+```{python}
+df.groupby('actual_quantile', observed=True)['difference'].mean()
+```
+
+### Justifying my choices
+
+##### I chose a more extreme representation of the BTA effect, where no one rates their perceived competency lower than 51%, meaning everyone thinks they are at least better than more than half the population.At the same time, I capped the top rating at 85%, meaning even those who are actually in the 100th percentile only percieved their skill level as in the 85th percentile. This would be a good simulation for common skills that nearly everyone has to some degree, for example, driving. Anecdotally, I'd argue that most people blame other drivers for poor driving and think that they are better than at least half of the people on the road. But since there are certainly hundreds of millions of drivers in the world, people might think there are likely exceptionally talented drivers out there whose skill level they do not come close to. At the end of the day, both Matt's model and this model can be useful to represent different skills. BTA and Dunning-Kruger are fun heuristics to discuss and simulate, but they are not hard and fast laws of reality that hold true in every situation. In reality, every application of these models will have different ranges whether it's 30-90 or 51-85. 
+
+```{python}
+
 ```
