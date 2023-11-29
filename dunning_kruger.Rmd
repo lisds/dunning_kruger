@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -112,4 +112,46 @@ df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.norma
 df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
 
 df.head()
+```
+
+My new simulation
+
+```{python}
+percentile_actual = np.linspace(0, 100, 10_000)
+percentile_actual
+```
+
+```{python}
+bottom_quartile = 10 #random numbers for both
+top_quartile = -5
+```
+
+```{python}
+new_perceived = crushed_bta.copy()
+new_perceived[:2500] += bottom_quartile
+new_perceived[7500:] += top_quartile
+```
+
+```{python}
+perceived_minus_actual = new_perceived - percentile_actual
+perceived_minus_actual
+```
+
+```{python}
+df = pd.DataFrame({
+    'actual_percentile': percentile_actual,
+    'perceived_percentile': new_perceived,
+    'difference': new_perceived - percentile_actual
+})
+df
+```
+
+```{python}
+df['actual_quantile'] = pd.qcut(df['actual_percentile'], 4,
+                                labels=['low', 'med-low', 'med-high', 'high'])
+df
+```
+
+```{python}
+df.groupby('actual_quantile', observed=True)['difference'].mean()
 ```
