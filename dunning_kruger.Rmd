@@ -7,7 +7,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.15.2
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -23,8 +23,7 @@ import numpy as np
 rng = np.random.default_rng()
 import pandas as pd
 import matplotlib.pyplot as plt
-np.set_printoptions(suppress=True)
-pd.set_option('mode.copy_on_write', True)
+
 ```
 
 In this notebook we are investigating whether the Dunning-Kruger effect can be explained with simple statistical artifacts.
@@ -112,4 +111,52 @@ df['perceived_percentile_w_randomness'] = df['perceived_percentile'] + rng.norma
 df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['actual_percentile']
 
 df.head()
+```
+
+```{python}
+# Just testing if this works 
+```
+
+```{python}
+percentile_actual = np.linspace(0, 100, 10000)
+bottom_quartile = 10
+top_quartile = -5
+# Adjust perceived ability based on quartiles
+new_perceived = np.zeros_like(percentile_actual)
+new_perceived[:2500] += bottom_quartile
+new_perceived[7500:] += top_quartile
+```
+
+```{python}
+# Calculate the difference between perceived and actual percentiles
+perceived_minus_actual = new_perceived - percentile_actual
+
+# Create a DataFrame
+df = pd.DataFrame({
+    'actual_percentile': percentile_actual,
+    'perceived_percentile': new_perceived,
+    'difference': perceived_minus_actual
+})
+```
+
+```{python}
+# Categorize actual percentiles into quantiles
+df['actual_quantile'] = pd.qcut(df['actual_percentile'], 4, labels=['low', 'med-low', 'med-high', 'high'])
+```
+
+```{python}
+# Display the DataFrame
+print(df)
+
+# Calculate the mean difference in perceived ability for each quantile
+mean_difference_by_quantile = df.groupby('actual_quantile', observed=True)['difference'].mean()
+print(mean_difference_by_quantile)
+
+# Plot the results
+plt.scatter(df['actual_percentile'], df['perceived_percentile'], label='Perceived vs Actual')
+plt.xlabel('Actual Percentile')
+plt.ylabel('Perceived Percentile')
+plt.legend()
+plt.title('Perceived vs Actual Percentiles')
+plt.show()
 ```
