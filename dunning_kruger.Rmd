@@ -62,9 +62,17 @@ percentile_actual
 ```
 
 ```{python}
-# Scale the range either side of the mean, to +-30 (rather than 50)
-x = percentile_actual -  50. # Scale so range is -30 to +30.
-crushed_bta = x * (30 / 50) + 60. # BTA effect (60 not 50).
+# Scale so range is 10 to 110 taking in the BTA effect +10.
+x = percentile_actual + 10
+
+
+# Creating a function that limits the maximum values to be 100, since if someone has 95 but thinks is better than what he really is - he can only put in 100 as a higher value.
+def max_100(x):
+    # Using list comprehension to create a new list with capped values
+    result = [min(a, 100) for a in x]
+    return result
+
+crushed_bta =  max_100(x) #this means you don't need to play around with any actually crushing you just shift the higher values onto a single value, no need for any strange rules; you just end up with more people that believe they are experts even though they aren't.
 np.mean(crushed_bta)
 ```
 
