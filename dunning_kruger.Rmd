@@ -113,3 +113,40 @@ df['difference_w_randomness'] = df['perceived_percentile_w_randomness'] - df['ac
 
 df.head()
 ```
+...{python}
+# my new additions
+...
+
+...{python}
+def simulate_self_rating(actual_scores):
+    percentile_actual = np.linspace(0, 100, 10_000)
+    x = percentile_actual -  50
+    crushed_bta = x * (30 / 50) + 60
+    np.mean(crushed_bta)
+    
+    # Simulate realistic self-rating towards the bottom and top of the distribution
+    bottom_quartile = np.percentile(actual_scores, 25)
+    top_quartile = np.percentile(actual_scores, 75)
+    
+    # Add randomness to perceived percentiles
+    perceived_percentile = crushed_bta + rng.normal(0, 10, len(actual_scores))
+    
+    # Adjust perceived percentiles for people in the bottom quartile
+    perceived_percentile[actual_scores < bottom_quartile] -= rng.normal(0, 5, np.sum(actual_scores < bottom_quartile))
+    
+    # Adjust perceived percentiles for people in the top quartile
+    perceived_percentile[actual_scores > top_quartile] += rng.normal(0, 5, np.sum(actual_scores > top_quartile))
+    
+    return perceived_percentile
+
+# Generate actual scores
+actual_scores = rng.normal(50, 15, size=10_000)
+
+# Simulate perceived percentiles
+perceived_percentile = simulate_self_rating(actual_scores)
+
+# Plot
+plt.scatter(actual_scores, perceived_percentile, alpha=0.5)
+...
+
+#test change
